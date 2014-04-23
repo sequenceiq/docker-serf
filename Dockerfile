@@ -3,6 +3,7 @@
 # docker build -t seq/ambari ambari-base
 
 FROM tianon/centos
+#FROM ambnew-installed-clean
 MAINTAINER SequenceIQ
 
 # dnsmasq
@@ -36,5 +37,11 @@ RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 RUN curl -Lso /tmp/serf.zip https://dl.bintray.com/mitchellh/serf/0.5.0_linux_amd64.zip
 RUN unzip /tmp/serf.zip -d /bin
 
-ADD serf-events.sh /etc/serf-events.sh
-RUN chmod +x /etc/serf-events.sh
+ADD event-router.sh /etc/serf/event-router.sh
+RUN chmod +x /etc/serf/event-router.sh
+
+ADD member-join.sh /etc/serf/handlers/member-join/member-join.sh
+RUN chmod +x /etc/serf/handlers/member-join/member-join.sh
+
+ADD serf.sysv.init /etc/init.d/serf
+RUN chmod +x /etc/init.d/serf
