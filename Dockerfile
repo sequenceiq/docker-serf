@@ -3,7 +3,7 @@
 # docker build -t seq/ambari ambari-base
 
 FROM tianon/centos
-MAINTAINER lalyos
+MAINTAINER SequenceIQ
 
 # dnsmasq
 RUN yum install -y dnsmasq
