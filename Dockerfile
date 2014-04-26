@@ -1,42 +1,24 @@
-# Creates an Ambari Server base on vanilla centos
+# Creates a base centos image with serf and dnsmasq
 #
-# docker build -t seq/ambari ambari-base
+# it aims to create a dynamic cluster of docker containers
+# each able to refer other by fully qulified domainnames
+#
+# this isn't trivial as docker has readonly /etc/hosts
 
 FROM tianon/centos
-#FROM ambnew-installed-clean
 MAINTAINER SequenceIQ
 
-# dnsmasq
-RUN yum install -y dnsmasq
+RUN yum install -y dnsmasq unzip curl
 
 # dnsmasq configuration
-RUN echo 'listen-address=127.0.0.1' >> /etc/dnsmasq.conf
-RUN echo 'resolv-file=/etc/resolv.dnsmasq.conf' >> /etc/dnsmasq.conf
-RUN echo 'conf-dir=/etc/dnsmasq.d' >> /etc/dnsmasq.conf
-RUN echo 'user=root' >> /etc/dnsmasq.conf
-
-# google dns
-RUN echo 'nameserver 8.8.8.8' >> /etc/resolv.dnsmasq.conf
-RUN echo 'nameserver 8.8.4.4' >> /etc/resolv.dnsmasq.conf
-
-# google dns
-RUN echo 'nameserver 8.8.8.8' >> /etc/resolv.dnsmasq.conf
-RUN echo 'nameserver 8.8.4.4' >> /etc/resolv.dnsmasq.conf
-
-
-RUN yum install -y sudo openssh-server openssh-clients unzip curl ntp
-
-RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
-RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
-RUN ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa
-RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
-
-# service sshd start
+ADD dnsmasq.conf /etc/dnsmasq.conf
+ADD resolv.dnsmasq.conf /etc/resolv.dnsmasq.conf
 
 # install serfdom.io
 RUN curl -Lso /tmp/serf.zip https://dl.bintray.com/mitchellh/serf/0.5.0_linux_amd64.zip
 RUN unzip /tmp/serf.zip -d /bin
 
+# configure serf
 ADD event-router.sh /etc/serf/event-router.sh
 RUN chmod +x /etc/serf/event-router.sh
 
@@ -45,3 +27,14 @@ RUN chmod +x /etc/serf/handlers/member-join/member-join.sh
 
 ADD serf.sysv.init /etc/init.d/serf
 RUN chmod +x /etc/init.d/serf
+
+ENTRYPOINT /bin/bash
+
+# # ssh
+# RUN yum install -y sudo openssh-server openssh-clients ntp
+#
+# # ssh config
+# RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
+# RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
+# RUN ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa
+# RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
