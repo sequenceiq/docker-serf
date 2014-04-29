@@ -18,17 +18,29 @@ ADD resolv.dnsmasq.conf /etc/resolv.dnsmasq.conf
 RUN curl -Lso /tmp/serf.zip https://dl.bintray.com/mitchellh/serf/0.5.0_linux_amd64.zip
 RUN unzip /tmp/serf.zip -d /bin
 
-# configure serf
-ADD event-router.sh /etc/serf/event-router.sh
-RUN chmod +x /etc/serf/event-router.sh
+ENV SERF_CONFIG_DIR /etc/serf
 
-ADD member-join.sh /etc/serf/handlers/member-join/member-join.sh
-RUN chmod +x /etc/serf/handlers/member-join/member-join.sh
+# configure serf
+ADD serf-config.json $SERF_CONFIG_DIR/serf-config.json
+
+ADD event-router.sh $SERF_CONFIG_DIR/event-router.sh
+RUN chmod +x  $SERF_CONFIG_DIR/event-router.sh
+
+ADD handlers $SERF_CONFIG_DIR/handlers
 
 ADD serf.sysv.init /etc/init.d/serf
 RUN chmod +x /etc/init.d/serf
 
-ENTRYPOINT /bin/bash
+ADD start-serf-agent.sh  $SERF_CONFIG_DIR/start-serf-agent.sh
+RUN chmod +x  $SERF_CONFIG_DIR/start-serf-agent.sh
+
+EXPOSE 7373
+
+#ENTRYPOINT ["/bin/serf", "agent", "-config-dir", "/etc/serf", "-node", "$(hostname -f)"]
+#CMD ["-log-level", "debug"]
+
+CMD /etc/serf/start-serf-agent.sh
+
 
 # # ssh
 # RUN yum install -y sudo openssh-server openssh-clients ntp

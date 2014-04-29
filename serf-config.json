@@ -1,6 +1,4 @@
 {
-  "rpc_auth":"xxx",
   "event_handlers": ["/etc/serf/event-router.sh"],
-  "rpc_addr" : "0.0.0.0:7373",
-  "start_join": ["172.17.0.2:7373"]
+  "rpc_addr" : "0.0.0.0:7373"
 }
