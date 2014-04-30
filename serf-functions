@@ -1,0 +1,47 @@
+#!/bin/bash
+
+: ${MYDOMAIN:=mycorp.kom}
+: ${NODES:=2}
+: ${IMAGE:=sequenceiq/serf}
+: ${DOCKER_OPTS:="--dns 127.0.0.1 -p 7373 -p 53"}
+
+serf-settings() {
+  cat <<EOF
+  FIRST_IP=$FIRST_IP
+  MYDOMAIN=$MYDOMAIN
+  NODES=$NODES
+  IMAGE=$IMAGE
+EOF
+}
+
+serf-start-first() {
+  FIRST=$(docker run -d $DOCKER_OPTS --name node0 -h node0.$MYDOMAIN $IMAGE)
+  FIRST_IP=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" $FIRST)
+  echo $FIRST_IP
+}
+
+serf-start-slave() {
+  : ${FIRST_IP:?"FIRST_IP is needed"}
+  NUMBER=${1:?"please give a <NUMBER> parameter it will be used as node<NUMBER>"}
+  docker run -d -e JOIN_IP=$FIRST_IP --dns 127.0.0.1 -p 7373 -p 53 --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE
+}
+
+serf-start-nodes() {
+  NUM_OF_NODES=$1
+  for i in $(seq $NUM_OF_NODES); do
+    serf-start-slave $i
+  done
+}
+
+serf-cluster() {
+  serf-start-first
+  serf-start-nodes $NODES
+}
+
+# starts a serf container, joins to cluster, and starts a bash
+serf-test-instance() {
+  docker run -i -t --rm --dns 127.0.0.1 --name node99 -h node99.$MYDOMAIN -e JOIN_IP=$FIRST_IP  sequenceiq/serf bash -c '(nohup /etc/serf/start-serf-agent.sh &) && /bin/bash'
+}
+
+
+alias serf-reload-functions=". serf-functions"
