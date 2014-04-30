@@ -7,17 +7,7 @@ between dynamically created docker containers.
 
 By default **/etc/hosts** is readonly in docker containers. The usual
 solution is to start a DNS server (probably as a docker container) and pass
-a reference when starting docker instances:
-
-```
-# start the dns server
-DNS=$(docker run -d some/dnsimage)
-DNS_IP=$(docker inspect --format "{{.NetworkSettings.IPAddress}}" $DNS)
-
-docker run -d -h mine-1.mycorp.com -dns $DNS_IP mycorp/bitcoinmine
-docker run -d -h mine-2.mycorp.com -dns $DNS_IP mycorp/bitcoinmine
-docker run -d -h mine-3.mycorp.com -dns $DNS_IP mycorp/bitcoinmine
-```
+a reference when starting docker instances: `docker run -dns <IP_OF_DNS>`
 
 The issues are:
 - the DNS server is a single point of failure
@@ -33,6 +23,7 @@ Serf:
 > Serf is a service discovery and orchestration tool that is decentralized,
 highly available, and fault tolerant.
 
+whenever a node joins or leaves the cluster
 ![serf on docker](https://s3-eu-west-1.amazonaws.com/sequenceiq/serf-docker.png)
 
 There are several Service Discovery projects including: zookeper, etcd, eureka,
