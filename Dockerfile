@@ -5,7 +5,7 @@
 #
 # this isn't trivial as docker has readonly /etc/hosts
 
-FROM tianon/centos
+FROM tianon/centos:6.5
 MAINTAINER SequenceIQ
 
 RUN yum install -y dnsmasq unzip curl
