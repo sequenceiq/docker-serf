@@ -13,13 +13,18 @@ serf-settings() {
 EOF
 }
 
-serf-start-first() {
-  FIRST=$(docker run -d $DOCKER_OPTS --name node0 -h node0.$MYDOMAIN $IMAGE)
-  FIRST_IP=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" $FIRST)
+serf-set-first-ip() {
+  : ${FIRST_IP:=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" node0)}
   echo FIRST_IP=$FIRST_IP
 }
 
+serf-start-first() {
+  FIRST=$(docker run -d $DOCKER_OPTS --name node0 -h node0.$MYDOMAIN $IMAGE)
+  serf-set-first-ip
+}
+
 serf-start-slave() {
+  serf-set-first-ip
   : ${FIRST_IP:?"FIRST_IP is needed"}
   NUMBER=${1:?"please give a <NUMBER> parameter it will be used as node<NUMBER>"}
   docker run -d -e JOIN_IP=$FIRST_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE
