@@ -27,7 +27,18 @@ serf-start-slave() {
   serf-set-first-ip
   : ${FIRST_IP:?"FIRST_IP is needed"}
   NUMBER=${1:?"please give a <NUMBER> parameter it will be used as node<NUMBER>"}
-  docker run -d -e JOIN_IP=$FIRST_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE
+  if [ $# -eq 1 ] ;then
+    MORE_OPTIONS="-d"
+  else
+    shift
+    MORE_OPTIONS="$@"
+  fi
+  docker run $MORE_OPTIONS -e JOIN_IP=$FIRST_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE
+}
+
+serf-start-slave-foreground() {
+  NUMBER=${1:?"please give a <NUMBER> parameter it will be used as node<NUMBER>"}
+  serf-start-slave $1 -t -i
 }
 
 serf-start-cluster() {
