@@ -3,7 +3,7 @@
 : ${MYDOMAIN:=mycorp.kom}
 : ${NODES:=2}
 : ${IMAGE:=sequenceiq/serf}
-: ${DOCKER_OPTS:="--dns 127.0.0.1 -p 7373 -p 53"}
+: ${DOCKER_OPTS:="--dns 127.0.0.1 -p 7373 -p 7946"}
 
 serf-settings() {
   cat <<EOF
