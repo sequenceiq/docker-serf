@@ -3,6 +3,7 @@
 : ${MYDOMAIN:=mycorp.kom}
 : ${IMAGE:=sequenceiq/serf}
 : ${DOCKER_OPTS:="--dns 127.0.0.1 -p 7373 -p 7946"}
+: ${DEBUG:=1}
 
 serf-settings() {
   cat <<EOF
@@ -13,13 +14,19 @@ serf-settings() {
 EOF
 }
 
+debug() {
+  [ -z $DEBUG ] || echo [DEBUG] $@
+}
+
 serf-set-first-ip() {
   : ${FIRST_IP:=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" node0)}
   echo FIRST_IP=$FIRST_IP
 }
 
 serf-start-first() {
-  FIRST=$(docker run -d $DOCKER_OPTS --name node0 -h node0.$MYDOMAIN $IMAGE)
+  CMD="docker run -d $DOCKER_OPTS --name node0 -h node0.$MYDOMAIN $IMAGE"
+  debug $CMD
+  FIRST=$($CMD)
   serf-set-first-ip
 }
 
@@ -33,7 +40,10 @@ serf-start-slave() {
     shift
     MORE_OPTIONS="$@"
   fi
-  docker run $MORE_OPTIONS -e JOIN_IP=$FIRST_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE
+  CMD="docker run $MORE_OPTIONS -e JOIN_IP=$FIRST_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE"
+  debug $CMD
+  $CMD
+
 }
 
 serf-start-slave-foreground() {
