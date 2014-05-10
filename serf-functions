@@ -21,6 +21,7 @@ debug() {
 docker-ps() {
   docker ps|sed "s/ \{3,\}/#/g"|cut -d '#' -f 1,2,7|sed "s/#/\t/g"
 }
+alias dps=docker-ps
 
 serf-set-first-ip() {
   : ${FIRST_IP:=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" node0)}
