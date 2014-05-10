@@ -56,7 +56,7 @@ serf-start-slave-foreground() {
 }
 
 serf-start-cluster() {
-  NUM_OF_NODES=${1:-2}
+  NUM_OF_NODES=${1:-3}
   echo starting $NUM_OF_NODES docker container
 
   serf-start-first
