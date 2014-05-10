@@ -28,8 +28,10 @@ RUN chmod +x  $SERF_CONFIG_DIR/event-router.sh
 
 ADD handlers $SERF_CONFIG_DIR/handlers
 
-ADD serf.sysv.init /etc/init.d/serf
-RUN chmod +x /etc/init.d/serf
+# docker.io hangs on ADD ???
+# https://index.docker.io/builds/github/4622/sequenceiq/docker-serf/builds/brvni7g9r73bb92nqaszgbp/
+#ADD serf.sysv.init /etc/init.d/serf
+#RUN chmod +x /etc/init.d/serf
 
 ADD start-serf-agent.sh  $SERF_CONFIG_DIR/start-serf-agent.sh
 RUN chmod +x  $SERF_CONFIG_DIR/start-serf-agent.sh
