@@ -40,13 +40,3 @@ EXPOSE 7373
 #CMD ["-log-level", "debug"]
 
 CMD /etc/serf/start-serf-agent.sh
-
-
-# # ssh
-# RUN yum install -y sudo openssh-server openssh-clients ntp
-#
-# # ssh config
-# RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
-# RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
-# RUN ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa
-# RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
