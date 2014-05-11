@@ -43,6 +43,11 @@ Notable features:
 The other part of the solution is [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html)
 a lightweight dns server.
 
+## Demo
+
+To see serf+dnsmasq containers working together see this demo:
+
+<script type="text/javascript" src="https://asciinema.org/a/9487.js" id="asciicast-9487" async></script>
 
 ## References
 
