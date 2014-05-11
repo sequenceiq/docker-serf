@@ -45,9 +45,7 @@ a lightweight dns server.
 
 ## Demo
 
-To see serf+dnsmasq containers working together see this demo:
-
-<script type="text/javascript" src="https://asciinema.org/a/9487.js" id="asciicast-9487" async></script>
+To see serf+dnsmasq containers working together see this [asciinema demo](https://asciinema.org/a/9487)
 
 ## References
 
