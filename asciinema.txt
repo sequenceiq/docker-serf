@@ -1,0 +1,67 @@
+== switch BOTTOM
+# to make it easier to work with docker containers, lets use some bash function
+curl -LOs j.mp/serf-functions
+. serf-functions
+
+#lets start the first docker container runing a serf agent
+serf-start-first
+
+# now lets start 2 more serf agents connecting to the first one
+serf-start-slave 1
+serf-start-slave 2
+docker-ps
+
+== switch TOP
+# lets start a serf container in the foreground, to watch the agent log
+serf-start-slave 3 -i -t
+
+== switch MIDDLE
+# and finally lets start a test node node99, also attaching into it
+serf-test-instance
+
+serf members
+# lets see the dnsmasq config file
+cat /etc/dnsmasq.d/0hosts
+
+== switch BOTTOM
+# lets stop node2, watch TOP panel for 'member-failed' event
+docker stop -t 1 node2
+docker ps
+
+== switch MIDDLE
+serf members
+# you can see that node 2 failed
+# lets check the dnsmasq config, which is regenerated at each member-xxx event
+cat /etc/dnsmasq.d/0hosts
+# notice that node2 is cleared
+
+== switch BOTTOM
+# lets start node2, notice the 'member-join' event in TOP panel
+docker start node2
+
+== switch MIDDLE
+
+serf members
+# notice that node2 is alive again, lets check the dnsmasq config
+cat /etc/dnsmasq.d/0hosts
+
+ping -c 3 node2.mycorp.kom
+# lets try to ping a nonexistent dns name
+ping -c 3 node42.mycorp.kom
+# no surprise there ..
+
+== switch BOTTOM
+# start node42, notice 'member-join' event in TOP panel
+
+serf-start-slave 42
+== switch MIDDLE
+
+serf members
+# node42 is alive, let see if we can ping it by FQDN
+ping -c 3 node42.mycorp.kom
+# the reason is the regenerated dnsmasq config
+cat /etc/dnsmasq.d/0hosts
+
+# that was the demo, thanks for watching
+# full source is: https://github.com/sequenceiq/docker-serf
+# if you liked it, donate a twitter msg :) #docker #serf #dnsmasq @sequenceiq @asciinema
