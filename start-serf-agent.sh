@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# service ntpd start
-# service sshd start
-
 service dnsmasq start
 
 SERF_CONFIG_DIR=/etc/serf
