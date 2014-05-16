@@ -1,0 +1,7 @@
+{
+  "event_handlers": [
+    "user=/usr/local/serf/bin/user-and-query-router.sh",
+    "query=/usr/local/serf/bin/user-and-query-router.sh"
+  ],
+  "rpc_addr" : "0.0.0.0:7373"
+}
