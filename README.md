@@ -1,53 +1,92 @@
 # Serf on Docker
+This is a [docker](docker.io) image and a couple of helper bash function, to work
+with [serf](serfdom.io).
 
-This image aims to provide resolvable fully qualified domain names,
-between dynamically created docker containers.
+This document describe the process:
+- create the docker image
+- start a cluster of connected serf agent running in docker containers
+- stop/start nodes to check how membership gossip works
 
-## The problem
+## Create the image
+```
+git clone git@github.com:sequenceiq/docker-serf.git
+cd docker-serf
+git checkout serf-only
+docker build -t sequenceiq/serf .
+```
 
-By default **/etc/hosts** is readonly in docker containers. The usual
-solution is to start a DNS server (probably as a docker container) and pass
-a reference when starting docker instances: `docker run -dns <IP_OF_DNS>`
+## start a demo cluster
 
-The issues are:
-- the DNS server is a single point of failure
-- you still have to reconfigure DNS at the start of every node
-- nodes probably want to know about each other, for that you need something
+run 3 docker container from the image you just built.
+all of them is running in the background (-d docker parameter)
 
-## The solution
+- **serf0** the first one doesn't joins to a cluster as he is the first
+- **serf<1..n>** nodes connecting to the cluster
 
-To avoid the single point of failure of a dedicated dns, lets start a lightweight
-dns: dnsmasq on each node. How they get informed of joining nodes? Here comes
-Serf:
+serf-start-cluster function defaults to starting 3 nodes. if you want more
+just add a parameter `serf-start-cluster 5`
 
-> Serf is a service discovery and orchestration tool that is decentralized,
-highly available, and fault tolerant.
+```
+# load helper bash functions serf-xxx
+. serf-functions
 
-whenever a node joins or leaves the cluster
-![serf on docker](https://s3-eu-west-1.amazonaws.com/sequenceiq/serf-docker.png)
+# start a cluster with 3 nodes
+serf-start-cluster
 
-There are several Service Discovery projects including: zookeper, etcd, eureka,
-but they seemed to be an overkill. Especially that the original problem domain
-was hadoop cluster on docker, so for hadoop you will use zookeper anyway.
+# check the running nodes
+docker ps
+```
 
-So [Serf](http://www.serfdom.io/) was chosen:
+## start a test node and attach
 
-> Serf's architecture is based on gossip and provides a smaller feature set.
-Serf only provides membership, failure detection, and user events.
+it starts a new container name **serf99**, but not in the brackound, like the previous ones.
+you will be attached to the container, which:
 
-Notable features:
- - no single point of failure
- - single binary distribution
- - easy extensibility via user-event handler scripts
+- joins the cluster
+- starts a **/bin/bash** ready to use
 
-The other part of the solution is [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html)
-a lightweight dns server.
+```
+serf-test-instance
 
-## Demo
+# once attached to the test instance prompt changes to [bash-4.1#]
+serf members
+```
+you will see now all memebers including the test instance itself **serf99**
+```
+serf99.mycorp.kom  172.17.0.5:7946  alive  
+serf1.mycorp.kom   172.17.0.3:7946  alive  
+serf0.mycorp.kom   172.17.0.2:7946  alive  
+serf2.mycorp.kom   172.17.0.4:7946  alive
+```
 
-To see serf+dnsmasq containers working together see this [asciinema demo](https://asciinema.org/a/9487)
+## Start/stop a node
 
-## References
+Stop one of the nodes:
+```
+docker stop -t 0 serf2
+```
 
- - [Serf vs. ZooKeeper, doozerd, etcd](http://www.serfdom.io/intro/vs-zookeeper.html)
- - [compairing Open-Source Service Discovery](http://jasonwilder.com/blog/2014/02/04/service-discovery-in-the-cloud/)
+now if you run again the `serf members` in **serf99** you will notice serf2 node marked as **failed**.
+note: it might take a couple of seconds, until the cluster gossips around the failure of node99.
+
+```
+serf99.mycorp.kom  172.17.0.5:7946  alive
+serf1.mycorp.kom   172.17.0.3:7946  failed  
+serf0.mycorp.kom   172.17.0.2:7946  alive
+serf2.mycorp.kom   172.17.0.4:7946  alive
+```
+
+if you resart the node **serf2**:
+```
+docker start serf2
+```
+
+It will apear again as **live**. Check it on **serf99**:
+```
+serf members
+
+serf99.mycorp.kom  172.17.0.5:7946  alive  
+serf1.mycorp.kom   172.17.0.3:7946  alive  
+serf0.mycorp.kom   172.17.0.2:7946  alive  
+serf2.mycorp.kom   172.17.0.4:7946  alive
+```
