@@ -25,7 +25,7 @@ alias dps=docker-ps
 
 serf-set-first-ip() {
   : ${FIRST_IP:=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" node0)}
-  echo FIRST_IP=$FIRST_IP
+  debug FIRST_IP=$FIRST_IP
 }
 
 serf-start-first() {
@@ -45,7 +45,7 @@ serf-start-slave() {
     shift
     MORE_OPTIONS="$@"
   fi
-  CMD="docker run $MORE_OPTIONS -e SERF_JOIN_IP=$FIRST_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE"
+  CMD="docker run $MORE_OPTIONS -e SERF_JOIN_IP=$FIRST_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE /usr/local/serf/bin/start-serf-agent.sh --log-level debug"
   debug $CMD
   $CMD
 
@@ -69,7 +69,7 @@ serf-start-cluster() {
 # starts a serf container, joins to cluster, and starts a bash
 serf-test-instance() {
   serf-set-first-ip
-  docker run -i -t --rm $DOCKER_OPTS --name node99 -h node99.$MYDOMAIN -e SERF_JOIN_IP=$FIRST_IP  sequenceiq/serf bash -c '(nohup /etc/serf/start-serf-agent.sh &) && /bin/bash'
+  docker run -i -t --rm $DOCKER_OPTS --name node99 -h node99.$MYDOMAIN -e SERF_JOIN_IP=$FIRST_IP  sequenceiq/serf bash -c '(nohup /usr/local/serf/bin/start-serf-agent.sh &) && /bin/bash'
 }
 
 
