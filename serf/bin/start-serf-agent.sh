@@ -19,7 +19,4 @@ cat > $SERF_CONFIG_DIR/node.json <<EOF
 }
 EOF
 
-$SERF_BIN agent -config-dir $SERF_CONFIG_DIR
-
-# or you can use the following oneliner on you Dockerfile
-# RUN yum install -y unzip curl && curl -Lso /tmp/serf.zip https://dl.bintray.com/mitchellh/serf/0.5.0_linux_amd64.zip && unzip /tmp/serf.zip -d /usr/local/bin && rm /tmp/serf.zip
+$SERF_BIN agent -config-dir $SERF_CONFIG_DIR $@
