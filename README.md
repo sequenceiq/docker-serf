@@ -63,10 +63,10 @@ serf2.mycorp.kom   172.17.0.4:7946  alive
 
 Stop one of the nodes:
 ```
-docker stop -t 0 serf2
+docker stop -t 0 serf1
 ```
 
-now if you run again the `serf members` in **serf99** you will notice serf2 node marked as **failed**.
+now if you run again the `serf members` in **serf99** you will notice serf1 node marked as **failed**.
 note: it might take a couple of seconds, until the cluster gossips around the failure of node99.
 
 ```
@@ -76,9 +76,9 @@ serf0.mycorp.kom   172.17.0.2:7946  alive
 serf2.mycorp.kom   172.17.0.4:7946  alive
 ```
 
-if you resart the node **serf2**:
+if you resart the node **serf1**:
 ```
-docker start serf2
+docker start serf1
 ```
 
 It will apear again as **live**. Check it on **serf99**:
