@@ -1,5 +1,6 @@
 #!/bin/bash
 
+: ${NODE_PREFIX=serf}
 : ${MYDOMAIN:=mycorp.kom}
 : ${IMAGE:=sequenceiq/serf}
 : ${DOCKER_OPTS:="--dns 127.0.0.1 -p 7373 -p 7946"}
@@ -7,10 +8,11 @@
 
 serf-settings() {
   cat <<EOF
-  SERF_JOIN_IP=$SERF_JOIN_IP
+  NODE_PREFIX=$NODE_PREFIX
   MYDOMAIN=$MYDOMAIN
   IMAGE=$IMAGE
   DOCKER_OPTS=$DOCKER_OPTS
+  SERF_JOIN_IP=$SERF_JOIN_IP
 EOF
 }
 
@@ -20,21 +22,23 @@ debug() {
 
 docker-ps() {
   docker ps|sed "s/ \{3,\}/#/g"|cut -d '#' -f 1,2,7|sed "s/#/\t/g"
+  #docker inspect --format="{{.Name}} {{.NetworkSettings.IPAddress}} {{.Config.Image}}" $(docker ps -q)
 }
 alias dps=docker-ps
 
 get-join-ip() {
-  : ${SERF_JOIN_IP:=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" node0)}
+  : ${SERF_JOIN_IP:=$(docker inspect --format="{{.NetworkSettings.IPAddress}}" ${NODE_PREFIX}0)}
+  # docker inspect --format="{{.Name}}" $(docker ps -q)|sed -n "/$NODE_PREFIX/ s:/${NODE_PREFIX}::p"
   debug SERF_JOIN_IP=$SERF_JOIN_IP
 }
 
 serf-start-first() {
-  CMD="docker run -d $DOCKER_OPTS --name node0 -h node0.$MYDOMAIN $IMAGE"
+  CMD="docker run -d $DOCKER_OPTS --name ${NODE_PREFIX}0 -h ${NODE_PREFIX}0.$MYDOMAIN $IMAGE"
   debug $CMD
   $CMD
 }
 
-serf-start-slave() {
+serf-start-node() {
   get-join-ip
   : ${SERF_JOIN_IP:?"SERF_JOIN_IP is needed"}
   NUMBER=${1:?"please give a <NUMBER> parameter it will be used as node<NUMBER>"}
@@ -44,14 +48,14 @@ serf-start-slave() {
     shift
     MORE_OPTIONS="$@"
   fi
-  CMD="docker run $MORE_OPTIONS -e SERF_JOIN_IP=$SERF_JOIN_IP $DOCKER_OPTS --name node$NUMBER -h node${NUMBER}.$MYDOMAIN $IMAGE /usr/local/serf/bin/start-serf-agent.sh --log-level debug"
+  CMD="docker run $MORE_OPTIONS -e SERF_JOIN_IP=$SERF_JOIN_IP $DOCKER_OPTS --name ${NODE_PREFIX}$NUMBER -h ${NODE_PREFIX}${NUMBER}.$MYDOMAIN $IMAGE /usr/local/serf/bin/start-serf-agent.sh --log-level debug"
   debug $CMD
   $CMD
 }
 
-serf-start-slave-foreground() {
-  NUMBER=${1:?"please give a <NUMBER> parameter it will be used as node<NUMBER>"}
-  serf-start-slave $1 -t -i
+serf-start-node-foreground() {
+  NUMBER=${1:?"please give a <NUMBER> parameter, it will be used as a postfix in nodename"}
+  serf-start-node $1 -t -i
 }
 
 serf-start-cluster() {
@@ -60,14 +64,14 @@ serf-start-cluster() {
 
   serf-start-first
   for i in $(seq $((NUM_OF_NODES - 1))); do
-    serf-start-slave $i
+    serf-start-node $i
   done
 }
 
 # starts a serf container, joins to cluster, and starts a bash
 serf-test-instance() {
   get-join-ip
-  docker run -i -t --rm $DOCKER_OPTS --name node99 -h node99.$MYDOMAIN -e SERF_JOIN_IP=$SERF_JOIN_IP  sequenceiq/serf bash -c '(nohup /usr/local/serf/bin/start-serf-agent.sh &) && /bin/bash'
+  docker run -i -t --rm $DOCKER_OPTS --name ${NODE_PREFIX}99 -h ${NODE_PREFIX}99.$MYDOMAIN -e SERF_JOIN_IP=$SERF_JOIN_IP  sequenceiq/serf bash -c '(nohup /usr/local/serf/bin/start-serf-agent.sh &) && /bin/bash'
 }
 
 
