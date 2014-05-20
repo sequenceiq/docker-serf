@@ -71,7 +71,7 @@ serf-start-cluster() {
 # starts a serf container, joins to cluster, and starts a bash
 serf-test-instance() {
   get-join-ip
-  docker run -i -t --rm $DOCKER_OPTS --name ${NODE_PREFIX}99 -h ${NODE_PREFIX}99.$MYDOMAIN -e SERF_JOIN_IP=$SERF_JOIN_IP  sequenceiq/serf bash -c '(nohup /usr/local/serf/bin/start-serf-agent.sh &) && /bin/bash'
+  docker run -i -t --rm $DOCKER_OPTS --name ${NODE_PREFIX}99 -h ${NODE_PREFIX}99.$MYDOMAIN -e SERF_JOIN_IP=$SERF_JOIN_IP  $IMAGE bash -c '(nohup /usr/local/serf/bin/start-serf-agent.sh &) && /bin/bash'
 }
 
 
