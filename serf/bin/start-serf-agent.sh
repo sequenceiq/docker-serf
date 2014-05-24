@@ -7,7 +7,8 @@ SERF_CONFIG_DIR=$SERF_HOME/etc
 # if SERF_JOIN_IP env variable set generate a config json for serf
 [[ -n $SERF_JOIN_IP ]] && cat > $SERF_CONFIG_DIR/join.json <<EOF
 {
-  "start_join" : ["$SERF_JOIN_IP"]
+  "retry_join" : ["$SERF_JOIN_IP"],
+  "retry_interval" : "5s"
 }
 EOF
 
@@ -15,7 +16,8 @@ EOF
 # we need FQDN
 cat > $SERF_CONFIG_DIR/node.json <<EOF
 {
-  "node_name" : "$(hostname -f)"
+  "node_name" : "$(hostname -f)",
+  "bind" : "$(hostname -f)"
 }
 EOF
 
