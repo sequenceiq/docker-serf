@@ -1,0 +1,8 @@
+#!/bin/bash
+
+BODY=$(cat)
+echo === tester function ===
+PRINTF=$(cat -vet <<<"$BODY"|sed -n "H; $ {x; s/\n//g; s/\^I/\\\\t/g; s/\\$/\\\\n/g; p }")
+cat <<EOF
+serf-test-$(date +%Y%m%d-%H%M%S)() { handler=\$1; : \${handler:? handler funtion is mandatory first parameter}; printf '$PRINTF' | ( $(for var in ${!SERF*}; do echo -n "$var=${!var} " ; done) \$handler ) ; }
+EOF
