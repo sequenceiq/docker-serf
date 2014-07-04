@@ -21,4 +21,11 @@ cat > $SERF_CONFIG_DIR/node.json <<EOF
 }
 EOF
 
-$SERF_BIN agent -config-dir $SERF_CONFIG_DIR $@
+# if SERF_ADVERTISE_IP env variable set generate a advertise.json for serf to advertise the given IP
+[[ -n $SERF_ADVERTISE_IP ]] && cat > $SERF_CONFIG_DIR/advertise.json <<EOF
+{
+  "advertise" : "$SERF_ADVERTISE_IP"
+}
+EOF
+
+$SERF_BIN agent -config-dir $SERF_CONFIG_DIR $@ | tee /var/log/serf.log
