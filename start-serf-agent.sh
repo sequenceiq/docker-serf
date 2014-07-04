@@ -21,4 +21,4 @@ cat > $SERF_CONFIG_DIR/node.json <<EOF
 }
 EOF
 
-/bin/serf agent -config-dir $SERF_CONFIG_DIR
+/bin/serf agent -log-level=debug -config-dir $SERF_CONFIG_DIR > /var/log/serf.log
