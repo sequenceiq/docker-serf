@@ -5,5 +5,7 @@ RUN yum install -y unzip curl && curl -Lso /tmp/serf.zip https://dl.bintray.com/
 ENV SERF_HOME /usr/local/serf
 ADD serf $SERF_HOME
 
+ADD logstash.repo /etc/yum.repos.d/logstash.repo
+
 EXPOSE 7373 7946
 CMD /usr/local/serf/bin/start-serf-agent.sh
