@@ -6,6 +6,8 @@ SERF_CONFIG_DIR=$SERF_HOME/etc
 SERF_LOG_FILE=/var/log/serf.log
 SERF_INIT_DIR=/usr/local/init
 
+set -x
+
 echo "Executing scripts from $SERF_INIT_DIR" | tee $SERF_LOG_FILE
 
 for file in $SERF_INIT_DIR/*
@@ -24,10 +26,16 @@ EOF
 
 # by default only short hostname would be the nodename
 # we need FQDN
+# while loop for azure deployment
+unset SERF_HOSTNAME
+while [ -z "$SERF_HOSTNAME" ]; do
+  SERF_HOSTNAME=$(hostname -f 2>/dev/null)
+  sleep 5
+done;
 cat > $SERF_CONFIG_DIR/node.json <<EOF
 {
-  "node_name" : "$(hostname -f)",
-  "bind" : "$(hostname -f)"
+  "node_name" : "$SERF_HOSTNAME",
+  "bind" : "$SERF_HOSTNAME"
 }
 EOF
 
