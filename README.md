@@ -1,6 +1,6 @@
 # Serf on Docker
-This is a [docker](docker.io) image and a couple of helper bash function, to work
-with [serf](serfdom.io).
+This is a [docker](https://docker.io) image and a couple of helper bash function, to work
+with [serf](https://serfdom.io).
 
 This document describe the process:
 - create the docker image
